@@ -1,0 +1,412 @@
+openapi: 3.0.3
+info:
+  title: Excalidraw Whiteboard Backend
+  version: "1.0"
+  description: >
+    Wire contract for the Go relay/persistence backend. This is the source of
+    truth for HTTP paths, methods, and payload shapes - see SRS.md for the
+    behavioral requirements each operation must satisfy (cross-referenced by
+    operationId) and EDD.md for how each operation is implemented.
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/admin:
+    post:
+      operationId: adminLogin
+      summary: Exchange a Firebase ID token for an admin JWT (allowlist-gated).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminLoginRequest" }
+      responses:
+        "200":
+          description: Admin JWT issued.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenResponse" }
+        "401": { description: Firebase ID token failed verification. }
+        "403": { description: Verified user is not on ADMIN_ALLOWLIST. }
+
+  /auth/guest:
+    post:
+      operationId: guestLogin
+      summary: Exchange a room ID + code for a room-bound guest JWT.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GuestLoginRequest" }
+      responses:
+        "200":
+          description: Guest JWT issued, bound to the room.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenResponse" }
+        "401": { description: Unknown room or wrong code. }
+        "429": { description: Too many attempts from this IP; rate-limited. }
+
+  /rooms:
+    get:
+      operationId: listRooms
+      summary: List currently-live rooms. Never exposes codes.
+      security: []
+      responses:
+        "200":
+          description: Live rooms.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RoomSummary" }
+    post:
+      operationId: createRoom
+      summary: Create a new, not-yet-saved document/room (admin only).
+      responses:
+        "201":
+          description: Room created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CreateRoomResponse" }
+        "403": { description: Caller is not an admin. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateRoomRequest" }
+
+  /rooms/{id}:
+    delete:
+      operationId: closeRoom
+      summary: Close a room (dual close-signal to connected clients).
+      parameters:
+        - $ref: "#/components/parameters/RoomID"
+      responses:
+        "204": { description: Room closed. }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Room not found. }
+
+  /rooms/{id}/name:
+    patch:
+      operationId: renameRoom
+      summary: Rename a not-yet-saved draft's in-memory room title.
+      parameters:
+        - $ref: "#/components/parameters/RoomID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RenameRequest" }
+      responses:
+        "200": { description: Renamed. }
+        "400": { description: Name is blank. }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Room not found. }
+
+  /rooms/{id}/save:
+    post:
+      operationId: saveScene
+      summary: Append the current canvas as a new version of the room's bound document.
+      parameters:
+        - $ref: "#/components/parameters/RoomID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SaveRequest" }
+      responses:
+        "200":
+          description: Version saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SaveResponse" }
+        "400": { description: elements is required. }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Room not found. }
+
+  /rooms/{id}/publish:
+    post:
+      operationId: publishScene
+      summary: Publish the current canvas to the public site (no version created).
+      parameters:
+        - $ref: "#/components/parameters/RoomID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PublishRequest" }
+      responses:
+        "200": { description: Published. }
+        "400": { description: elements is required. }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Room not found. }
+
+  /scenes:
+    get:
+      operationId: listScenes
+      summary: List all saved documents, regardless of live status (admin only).
+      responses:
+        "200":
+          description: Document catalog.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SceneSummary" }
+        "403": { description: Caller is not an admin. }
+
+  /scenes/{id}/open:
+    post:
+      operationId: openScene
+      summary: Get-or-create the single canonical live room for a document (idempotent).
+      parameters:
+        - $ref: "#/components/parameters/SceneID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OpenSceneRequest" }
+      responses:
+        "200":
+          description: The live room (pre-existing or newly created).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OpenSceneResponse" }
+        "403": { description: Caller is not an admin. }
+
+  /scenes/{id}:
+    patch:
+      operationId: renameScene
+      summary: Rename a saved document; updates its live room's title too, if any.
+      parameters:
+        - $ref: "#/components/parameters/SceneID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RenameRequest" }
+      responses:
+        "200": { description: Renamed. }
+        "400": { description: Name is blank. }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Document not found. }
+    delete:
+      operationId: deleteScene
+      summary: Delete a document and its full version history.
+      parameters:
+        - $ref: "#/components/parameters/SceneID"
+      responses:
+        "204": { description: Deleted. }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Document not found. }
+        "409": { description: Document currently has a live room; close it first. }
+
+  /scenes/{id}/versions:
+    get:
+      operationId: listVersions
+      summary: List a document's versions (admin only).
+      parameters:
+        - $ref: "#/components/parameters/SceneID"
+      responses:
+        "200":
+          description: Version summaries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/VersionSummary" }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Document not found. }
+
+  /scenes/{id}/versions/{vid}:
+    get:
+      operationId: getVersion
+      summary: Fetch one version's full elements/appState/fileIds (admin only).
+      parameters:
+        - $ref: "#/components/parameters/SceneID"
+        - name: vid
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Full version data.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VersionData" }
+        "403": { description: Caller is not an admin. }
+        "404": { description: Document or version not found. }
+
+  /ws/{id}:
+    get:
+      operationId: relayConnect
+      summary: >
+        WebSocket upgrade for a room's collaboration session. Not a normal
+        bearer-auth request: the connection MUST send exactly one
+        {"type": "auth", "token": "<jwt>"} frame before any other traffic
+        (SRS FR-3.2); the server closes with code 4003 on failed/missing
+        auth. After that, every frame is broadcast opaquely to other clients
+        in the room (SRS FR-3.3).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/RoomID"
+      responses:
+        "101": { description: Switching Protocols (WebSocket upgrade). }
+
+  /healthz:
+    get:
+      operationId: healthCheck
+      summary: Liveness check.
+      security: []
+      responses:
+        "200": { description: OK. }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    RoomID:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    SceneID:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+
+  schemas:
+    AdminLoginRequest:
+      type: object
+      required: [idToken]
+      properties:
+        idToken: { type: string, description: Firebase ID token from Google sign-in. }
+
+    GuestLoginRequest:
+      type: object
+      required: [room, code]
+      properties:
+        room: { type: string }
+        code: { type: string, description: The room's current 4-character guest code. }
+
+    TokenResponse:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string, description: Backend-issued JWT. }
+        room: { type: string, description: Present for guest tokens; the bound room ID. }
+
+    RoomSummary:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        participantCount: { type: integer }
+        sceneId: { type: string, description: Omitted for a not-yet-saved room. }
+
+    CreateRoomRequest:
+      type: object
+      properties:
+        name: { type: string, description: Initial title; defaults to "Untitled". }
+        sceneId:
+          type: string
+          deprecated: true
+          description: >
+            Superseded by POST /scenes/{id}/open (operationId openScene),
+            which additionally guarantees a single canonical live room per
+            scene. Retained for one deploy cycle for old frontend builds.
+
+    CreateRoomResponse:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        code: { type: string, description: Guest code, shown to the creating admin. }
+        sceneId: { type: string }
+
+    RenameRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+
+    SaveRequest:
+      type: object
+      required: [elements]
+      properties:
+        elements: { type: object, description: Excalidraw elements array (raw JSON). }
+        appState: { type: object, description: Excalidraw viewport/zoom state (raw JSON). }
+        files:
+          type: object
+          description: Map of fileId → Excalidraw BinaryFileData, for any new images.
+          additionalProperties: { type: object }
+
+    SaveResponse:
+      type: object
+      properties:
+        sceneId: { type: string }
+        versionId: { type: string }
+
+    PublishRequest:
+      type: object
+      required: [elements]
+      properties:
+        elements: { type: object }
+        appState: { type: object }
+        files:
+          type: object
+          additionalProperties: { type: object }
+
+    SceneSummary:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+        createdBy: { type: string }
+
+    OpenSceneRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Scene's current display title, used to seed a newly-created room.
+        versionId:
+          type: string
+          description: >
+            Selects which saved version seeds a newly-created room. Ignored
+            if the scene is already live (joining always wins).
+
+    OpenSceneResponse:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        code: { type: string }
+        sceneId: { type: string }
+        live: { type: boolean, description: True if this call joined an existing session. }
+
+    VersionSummary:
+      type: object
+      properties:
+        id: { type: string }
+        createdAt: { type: string, format: date-time }
+        savedBy: { type: string }
+
+    VersionData:
+      type: object
+      properties:
+        elements: { type: object }
+        appState: { type: object }
+        fileIds:
+          type: array
+          items: { type: string }

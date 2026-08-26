@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+frontend/dist/
+backend/backend
+backend/bin/
+backend/tmp/
+
+# Env files (never commit real secrets)
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Firebase service account keys - must never be committed
+service-account*.json
+backend/service-account*.json
+
+# Firebase CLI / emulator artifacts
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+storage-debug.log
+firebase-export-*/
+
+# Terraform (state may contain secrets; tfvars is environment-specific).
+# Keep .terraform.lock.hcl committed.
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+infra/terraform/*.tfplan
+infra/terraform/terraform.tfvars
+infra/terraform/backend.hcl
+crash.log
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
