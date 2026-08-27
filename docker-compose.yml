@@ -1,0 +1,29 @@
+# Local development dependencies. The Firebase emulator suite (Auth, Firestore,
+# Storage) runs in a container so the host needs no JRE or firebase-tools.
+#
+#   docker compose up            # start the emulators (UI at http://localhost:4000)
+#   docker compose down          # stop (data is preserved in the named volume)
+#
+# The Go backend and Vite frontend run on the host — see the Makefile / docs/dev.md.
+
+services:
+  firebase-emulators:
+    build: ./infra/firebase/emulators
+    container_name: canvas-firebase-emulators
+    environment:
+      FIREBASE_PROJECT: demo-canvas
+    ports:
+      - "9099:9099" # Auth
+      - "8081:8081" # Firestore (8081 to avoid clashing with the backend on 8080)
+      - "9199:9199" # Storage
+      - "4000:4000" # Emulator UI
+      - "4400:4400" # Emulator hub
+      - "4500:4500" # Logging
+    volumes:
+      - ./firebase.json:/workspace/firebase.json:ro
+      - ./infra/firebase/firestore.rules:/workspace/infra/firebase/firestore.rules:ro
+      - ./infra/firebase/storage.rules:/workspace/infra/firebase/storage.rules:ro
+      - emulator-data:/workspace/.emulator-data
+
+volumes:
+  emulator-data:
