@@ -31,7 +31,7 @@ deploys it straight to the service.
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `project_id` | yes | — | GCP/Firebase project id (billing enabled) |
-| `region` | no | `us-central1` | Region for Run/AR/Firestore/bucket |
+| `region` | no | `northamerica-northeast2` | Region for Run/AR/Firestore/bucket |
 | `service_name` | no | `phil-canvas-backend` | Cloud Run name (must match `firebase.json` rewrites) |
 | `github_repository` | yes | — | `owner/repo` allowed to push images via WIF |
 | `admin_allowlist` | yes | — | Comma-separated admin emails/UIDs |

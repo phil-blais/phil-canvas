@@ -5,7 +5,7 @@ variable "project_id" {
 
 variable "region" {
   type        = string
-  default     = "us-central1"
+  default     = "northamerica-northeast2"
   description = "Region for Cloud Run, Artifact Registry, Firestore, and the bucket. Must match the region in firebase.json rewrites."
 }
 

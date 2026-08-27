@@ -1,7 +1,7 @@
 # Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
 
 project_id      = "example-project"
-region          = "us-central1"
+region          = "northamerica-northeast2"
 admin_allowlist = "you@example.com"
 
 # GitHub repo (owner/repo) allowed to push images via Workload Identity Federation.

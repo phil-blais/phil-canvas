@@ -30,7 +30,7 @@ State is stored remotely in GCS. Create the state bucket once (Terraform can't
 create the bucket holding its own state), then init with it:
 
 ```sh
-export REGION=us-central1
+export REGION=northamerica-northeast2
 export STATE_BUCKET=$PROJECT_ID-tfstate
 gcloud storage buckets create "gs://$STATE_BUCKET" \
   --project="$PROJECT_ID" --location="$REGION" --uniform-bucket-level-access
