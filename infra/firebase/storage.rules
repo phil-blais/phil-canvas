@@ -1,0 +1,17 @@
+rules_version = '2';
+
+// The Go backend writes all objects via the Firebase Admin SDK, which bypasses
+// these rules. Clients only ever READ the published scene and its image files.
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Published scene JSON + content-addressed image files: public read.
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    // Everything else is server-mediated only.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

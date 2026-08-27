@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "phil-canvas"
+  },
+  "targets": {
+    "phil-canvas": {
+      "hosting": {
+        "web": ["phil-canvas"]
+      }
+    }
+  }
+}

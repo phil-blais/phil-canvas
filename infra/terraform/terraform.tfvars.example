@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+
+project_id      = "example-project"
+region          = "us-central1"
+admin_allowlist = "you@example.com"
+
+# GitHub repo (owner/repo) allowed to push images via Workload Identity Federation.
+github_repository = "your-org/example"
+
+# Globally-unique bucket name.
+bucket_name = "example-project-scenes"
+
+# Allowed origins for browser fetches of the published scene/files.
+cors_origins = [
+  "https://example-project.web.app",
+  "https://example-project.firebaseapp.com",
+  "http://localhost:5173",
+]
