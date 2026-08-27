@@ -1,0 +1,7 @@
+# Keep the build context small and secrets out of the image.
+.env
+*.env
+service-account*.json
+**/*_test.go
+Dockerfile
+.dockerignore
