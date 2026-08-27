@@ -1,0 +1,619 @@
+.flyout {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+.flyout-toggle {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: #1971c2;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.flyout-toggle:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.flyout-toggle:active {
+  transform: scale(0.94);
+}
+
+.flyout-body {
+  width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  animation: flyout-in 0.15s ease;
+}
+
+@keyframes flyout-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flyout-body h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+/* Version history: a separate panel docked to the left of the main flyout
+   (not swapped in over it), so the document it belongs to — its title, its
+   Save/Publish controls, its row in the documents list — stays visible and
+   the connection between the two panels stays obvious. */
+.history-panel {
+  position: fixed;
+  right: 332px;
+  bottom: 16px;
+  width: 300px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  z-index: 10;
+  animation: flyout-in 0.15s ease;
+  /* Hard clip: a rounded box with no overflow set lets wide content (the
+     version table) visually poke straight through its border. */
+  overflow: hidden;
+}
+
+.history-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-panel-header h3 {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.history-panel-header p {
+  margin: 0;
+}
+
+.history-panel-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 16px 16px;
+  /* Flex items default to min-width: auto, which lets wide content (the
+     version table) push past the panel's fixed width instead of triggering
+     .version-table-wrap's own horizontal scroll. Force it to respect the
+     column. */
+  min-width: 0;
+}
+
+@media (max-width: 680px) {
+  /* Not enough width for two side-by-side panels — stack history above the
+     main flyout instead of clipping off the left edge of the screen. */
+  .history-panel {
+    right: 16px;
+    bottom: 84px;
+  }
+}
+
+.flyout-section {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.flyout-section:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+/* Action button groups: equal width per button, centered as a block (a lone
+   button in a row simply fills it, which reads as centered). */
+.btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-row > .btn {
+  flex: 1 1 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stack.full-width {
+  width: 100%;
+}
+
+/* Generic single-line row layout: label(s) on the left, action(s) on the
+   right. Reused for room entries, scene entries, and the identity status
+   line — none of these are room-specific, hence the generic name. */
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+.list-row + .list-row {
+  border-top: 1px solid var(--border);
+}
+
+.list-row-title {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.list-row-meta {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.skeleton-bar {
+  background: var(--border);
+  border-radius: 4px;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.skeleton-bar-title {
+  width: 96px;
+  height: 14px;
+  margin-bottom: 6px;
+}
+
+.skeleton-bar-meta {
+  width: 64px;
+  height: 11px;
+}
+
+.skeleton-bar-name {
+  width: 110px;
+  height: 14px;
+}
+
+.skeleton-bar-btn {
+  width: 52px;
+  height: 26px;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bar {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+.subgroup {
+  margin-bottom: 12px;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  background: #1971c2;
+  color: #fff;
+  transition: background-color 0.15s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: #1862ab;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #1971c2;
+  outline-offset: 2px;
+}
+
+.btn.secondary {
+  background: var(--code-bg);
+  color: var(--text-h);
+}
+
+.btn.secondary:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.btn.danger {
+  background: #e03131;
+  color: #fff;
+}
+
+.btn.danger:hover:not(:disabled) {
+  background: #c92a2a;
+}
+
+.btn.small {
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.code-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.code-input.plain {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.code-input:focus {
+  outline: none;
+  border-color: #1971c2;
+}
+
+.error {
+  color: #e03131;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.muted {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.share-code {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 16px;
+  font-size: 22px;
+  letter-spacing: 4px;
+  font-weight: 700;
+  color: #1971c2;
+  background: rgba(25, 113, 194, 0.1);
+  border-radius: 8px;
+}
+
+/* Persistent, always-editable document title (Google-Docs-style), distinct
+   from the compact .code-input used for the join code and pre-rename prompt. */
+.title-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-h);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.title-input:hover {
+  border-color: var(--border);
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: #1971c2;
+  background: var(--bg);
+}
+
+/* Small live-status indicator dot, shown inline before "Live · N editing". */
+.badge-live {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 2px;
+  border-radius: 50%;
+  background: #2f9e44;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+}
+
+/* Anchors a dropdown (.context-menu-list) to its trigger button. */
+.context-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.context-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  z-index: 20;
+  animation: flyout-in 0.1s ease;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-h);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.context-menu-item:hover:not(:disabled) {
+  background: var(--code-bg);
+}
+
+.context-menu-item.danger {
+  color: #e03131;
+}
+
+.context-menu-item:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* File-manager-style document browser: a dimmed backdrop behind a centered
+   two-pane dialog (list left, detail right). No portal — position: fixed
+   already escapes .flyout-body's overflow, the same way .history-panel does. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.45);
+  animation: flyout-in 0.15s ease;
+}
+
+.doc-modal {
+  width: min(880px, 92vw);
+  height: min(600px, 82vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+.doc-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.doc-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.doc-modal-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.doc-modal-list {
+  width: 260px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 8px;
+  border-right: 1px solid var(--border);
+}
+
+.doc-modal-list-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  margin-bottom: 2px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.doc-modal-list-item:hover {
+  background: var(--code-bg);
+}
+
+.doc-modal-list-item.selected {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+
+.doc-modal-detail {
+  flex: 1;
+  min-width: 0; /* same flex-overflow fix as .history-panel-body */
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-modal-detail h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.doc-modal-empty {
+  margin: auto;
+  text-align: center;
+}
+
+.doc-modal-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* Version history as a table (date / who / restore) instead of a list — one
+   row per save, columns aligned so a run of versions is easy to scan. Wrapped
+   so a narrow host (the docked .history-panel is only 300px) scrolls
+   horizontally instead of squeezing the columns unreadably. */
+.version-table-wrap {
+  overflow-x: auto;
+}
+
+.version-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.version-table th {
+  padding: 0 8px 6px 0;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.version-table td { 
+  text-align: left;
+  padding: 8px 8px 8px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-h);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.version-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.version-table th:last-child,
+.version-table td:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .doc-modal {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+
+  .doc-modal-body {
+    flex-direction: column;
+  }
+
+  .doc-modal-list {
+    width: 100%;
+    max-height: 40%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.landing-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(45deg, #fafafa, #fafafa 20px, #f3f3f3 20px, #f3f3f3 40px);
+  color: #adb5bd;
+  font: 500 20px/1.4 system-ui, sans-serif;
+}
