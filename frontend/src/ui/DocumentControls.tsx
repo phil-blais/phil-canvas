@@ -117,7 +117,7 @@ export function DocumentControls({
               <ContextMenu label="More document actions">
                 {(close) => (
                   <button
-                    className="context-menu-item"
+                    className="app-context-menu-item"
                     disabled={busy}
                     onClick={() => {
                       setHistoryOpen(true)

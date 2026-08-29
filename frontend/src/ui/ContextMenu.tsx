@@ -55,7 +55,7 @@ export function ContextMenu({
   }, [open])
 
   return (
-    <div className="context-menu" ref={ref}>
+    <div className="app-context-menu" ref={ref}>
       <button
         type="button"
         className="btn small secondary icon-btn"
@@ -67,7 +67,7 @@ export function ContextMenu({
         <KebabIcon />
       </button>
       {open && (
-        <div className="context-menu-list" role="menu">
+        <div className="app-context-menu-list" role="menu">
           {children(close)}
         </div>
       )}

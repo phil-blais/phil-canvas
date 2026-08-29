@@ -376,13 +376,13 @@
   padding: 6px 8px;
 }
 
-/* Anchors a dropdown (.context-menu-list) to its trigger button. */
-.context-menu {
+/* Anchors a dropdown (.app-context-menu-list) to its trigger button. */
+.app-context-menu {
   position: relative;
   display: inline-flex;
 }
 
-.context-menu-list {
+.app-context-menu-list {
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
@@ -399,7 +399,7 @@
   animation: flyout-in 0.1s ease;
 }
 
-.context-menu-item {
+.app-context-menu-item {
   display: block;
   width: 100%;
   text-align: left;
@@ -413,15 +413,15 @@
   cursor: pointer;
 }
 
-.context-menu-item:hover:not(:disabled) {
+.app-context-menu-item:hover:not(:disabled) {
   background: var(--code-bg);
 }
 
-.context-menu-item.danger {
+.app-context-menu-item.danger {
   color: #e03131;
 }
 
-.context-menu-item:disabled {
+.app-context-menu-item:disabled {
   opacity: 0.5;
   cursor: default;
 }
