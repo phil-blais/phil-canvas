@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { fetchSceneFiles } from '../api/storage'
 import { currentScenePayload } from '../collab/scenePayload'
 import { mergeRestoredElements } from '../collab/restoreVersion'
+import { toggleAnchor } from '../collab/anchor'
 import type { ActiveRoom, Session } from '../session/useSession'
 import { useAsyncAction } from './useAsyncAction'
 import { ContextMenu } from './ContextMenu'
@@ -79,6 +80,20 @@ export function DocumentControls({
     setHistoryOpen(false)
   }
 
+  // Marks whichever single element is currently selected as the room's
+  // anchor (see collab/anchor.ts) — re-running it on the current anchor
+  // clears the flag instead of re-setting it.
+  const toggleSelectionAsAnchor = () => {
+    if (!excalidrawApi) return
+    const selectedIds = Object.keys(excalidrawApi.getAppState().selectedElementIds)
+    if (selectedIds.length !== 1) {
+      excalidrawApi.setToast({ message: 'Select exactly one element to toggle it as the anchor' })
+      return
+    }
+    const elements = excalidrawApi.getSceneElementsIncludingDeleted() as OrderedExcalidrawElement[]
+    excalidrawApi.updateScene({ elements: toggleAnchor(elements, selectedIds[0]) })
+  }
+
   return (
     <>
       <div className="flyout-section">
@@ -113,22 +128,34 @@ export function DocumentControls({
             <button className="btn secondary" disabled={busy || !excalidrawApi} onClick={() => void publish()}>
               Publish
             </button>
-            {room.sceneId && (
-              <ContextMenu label="More document actions">
-                {(close) => (
+            <ContextMenu label="More document actions">
+              {(close) => (
+                <>
                   <button
                     className="app-context-menu-item"
-                    disabled={busy}
+                    disabled={busy || !excalidrawApi}
                     onClick={() => {
-                      setHistoryOpen(true)
+                      toggleSelectionAsAnchor()
                       close()
                     }}
                   >
-                    Version history
+                    Toggle anchor on selection
                   </button>
-                )}
-              </ContextMenu>
-            )}
+                  {room.sceneId && (
+                    <button
+                      className="app-context-menu-item"
+                      disabled={busy}
+                      onClick={() => {
+                        setHistoryOpen(true)
+                        close()
+                      }}
+                    >
+                      Version history
+                    </button>
+                  )}
+                </>
+              )}
+            </ContextMenu>
           </div>
         </div>
       )}

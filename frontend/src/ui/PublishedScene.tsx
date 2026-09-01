@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { AppState, BinaryFiles, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types'
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import { fetchPublishedScene, fetchSceneFiles } from '../api/storage'
+import { centerOnAnchor } from '../collab/anchor'
 import { useLatestOnly } from '../hooks/useLatestOnly'
 
 type State =
@@ -30,11 +31,12 @@ export function PublishedScene() {
       }
       const files = await fetchSceneFiles(scene.fileIds ?? [])
       if (!isCurrent(token)) return
+      const elements = scene.elements as ExcalidrawElement[]
       setState({
         status: 'ready',
         data: {
-          elements: scene.elements as ExcalidrawElement[],
-          appState: scene.appState as Partial<AppState>,
+          elements,
+          appState: centerOnAnchor(elements, scene.appState as Partial<AppState>),
           files: files as BinaryFiles,
         },
       })

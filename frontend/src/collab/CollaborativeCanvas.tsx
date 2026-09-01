@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 
 import { useCollaborativeSync, type CollaborativeSyncProps, type SceneSeed } from './useCollaborativeSync'
+import { centerOnAnchor, findAnchor } from './anchor'
 
 export type { SceneSeed }
 
@@ -43,7 +44,14 @@ export function CollaborativeCanvas({ onApiChange, ...syncProps }: Collaborative
         onPointerUpdate={handlePointerUpdate}
         isCollaborating
         initialData={
-          initialSeed ? { elements: initialSeed.elements, files: initialSeed.files, scrollToContent: true } : undefined
+          initialSeed
+            ? {
+                elements: initialSeed.elements,
+                files: initialSeed.files,
+                appState: centerOnAnchor(initialSeed.elements),
+                scrollToContent: !findAnchor(initialSeed.elements),
+              }
+            : undefined
         }
       />
     </div>
